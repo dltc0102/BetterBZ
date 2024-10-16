@@ -1,0 +1,9 @@
+{
+    "name": "BetterBZ",
+    "description": "makes bazaar messages more compact",
+    "version": "1.0.1",
+    "author": "oBiscuit",
+    "entry": "index.js",
+    "requires": []
+}
+

@@ -5,12 +5,13 @@ function generateMessage(prefix, message, regex, formatHandler) {
     if (match) {
         return formatHandler(prefix, match);    
     } else {        
+        console.log('not matched -- bz')
         console.log(`matched: false`);
         console.log(`formatHandler: ${formatHandler}`);
         console.log(`message: ${message}`);
         console.log(`regex: ${regex}`);
         console.log(' ');
-        return 'not matched -- bz';
+        return;
     }
 }
 

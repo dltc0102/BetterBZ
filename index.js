@@ -34,7 +34,7 @@ register('gameLoad', () => {
         `${bzLoadMessage} &r&8-- `, supportClickable
     );
     
-    ChatLib.chat(bzLoadMessage);
+    ChatLib.chat(suppportMessage);
     if (bzData.firstInstall) { 
         bzData.firstInstall = false;
     }

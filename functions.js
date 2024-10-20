@@ -4,7 +4,7 @@ export function showAlert(someTitle) {
 
 export function stripRank(name) {
     const rankNameRegex = /\[(?:MVP\+\+|MVP\+|MVP|VIP\+|VIP)\] (\S+)/;
-    let nameMatch = name.match(rankNameRegex);
+    const nameMatch = name.match(rankNameRegex);
     return nameMatch ? nameMatch[1] : name.trim();
 }
 
@@ -16,8 +16,8 @@ export function abbreviateWords(name) {
     return newName.removeFormatting();
 }
 
-export function truncateNumbers(amt) { 
-    const cost = Number(amt.toString().replace(/,/g, ''));
+export function truncateNumbers(amt, isCoins=false) { 
+    const cost = Number(amt.toString().replace(/,/g, '').replace('-', ''));
     const formatNumber = (num) => {
         const fixedNum = num.toFixed(2);
         return fixedNum.endsWith('.00') ? num.toFixed(0) : fixedNum;
@@ -33,9 +33,13 @@ export function truncateNumbers(amt) {
         case cost >= 1_000:
             return formatNumber(cost / 1_000) + 'K';
         case cost !== 1 && cost < 1_000:
-            return cost.toString() + ' coins';
-        default:
-            return cost.toString() + ' coin';
+            return isCoins 
+                ? `${cost.toFixed(1).toString()} coins` 
+                : cost.toFixed(1).toString();
+        default:    
+            return isCoins 
+                ? `${cost.toFixed(1).toString()} coin` 
+                : cost.toFixed(1).toString();
     }
 };
 
@@ -54,8 +58,8 @@ export function getCurrArea() {
     if (!getInSkyblock()) return;
     let rawArea = '';
     TabList.getNames().forEach(line => {
-        let fLine = line.removeFormatting();
-        let areaMatch = fLine.match(/Area: (.+)/);
+        const fLine = line.removeFormatting();
+        const areaMatch = fLine.match(/Area: (.+)/);
         if (areaMatch) rawArea = areaMatch[1];
     });
     return rawArea;

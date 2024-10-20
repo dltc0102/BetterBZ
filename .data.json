@@ -1,5 +1,4 @@
 {
     "sounds": true,
-    "firstInstall": false,
-    "flagBZSounds": false
+    "firstInstall": false
 }

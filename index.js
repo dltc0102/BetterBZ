@@ -1,16 +1,20 @@
-import { getInSkyblock, replaceBazaarMessage, stripRomanNumerals } from './functions.js';
+import { getInSkyblock, replaceBazaarMessage, stripRomanNumerals, truncateNumbers } from './functions.js';
 import { getBazaarResponse } from './formatFunctions.js'
 import Audio from './audio.js';
 import PogObject from '../PogData';
 
 const bzAudio = new Audio();
 const BZ_PREFIX = '&6[BZ] '; 
-let moduleVersion = JSON.parse(FileLib.read("BetterBZ", "metadata.json")).version;
+const moduleVersion = JSON.parse(FileLib.read("BetterBZ", "metadata.json")).version;
+const supportLink = 'https://discord.gg/gGd6RD5Z';
+const supportClickable = new TextComponent('&c&l[REPORT ERRORS HERE]')
+    .setClick('open_url', supportLink)
+    .setHover('show_text', supportLink);
 
 export const bzData = new PogObject("BetterBZ", {
     "sounds": false,
     "firstInstall": false,
-})
+});
 bzData.autosave(5);
 
 register('command', () => {
@@ -24,16 +28,18 @@ register('command', () => {
 }).setName('bzsounds');
 
 register('gameLoad', () => {
-    let soundStatus = bzData.sounds ? '&aON' : '&cOFF';
-    ChatLib.chat(`&6[BetterBZ] &7Loaded! &3[&rSounds: ${soundStatus}&3]`);                      
-    if (bzData.firstInstall) {
-        if (moduleVersion === '1.0.1') {
-            ChatLib.chat(`&e&lNEW Features: (v1.0.1)`);
-            ChatLib.chat(`o &rDo &b/bzsounds &rto turn ding sounds on/off`)
-            ChatLib.chat(`&7Note: These sounds are only available for 'sell offer/buy order filled'!`)
-        }
+    const soundStatus = bzData.sounds ? '&aON' : '&cOFF';
+    const bzLoadMessage = `&6[BetterBZ] &7Loaded! &3[&rSounds: ${soundStatus}&3]`;
+    const suppportMessage = new Message (
+        `${bzLoadMessage} &r&8-- `, supportClickable
+    );
+    
+    ChatLib.chat(bzLoadMessage);
+    if (bzData.firstInstall) { 
+        bzData.firstInstall = false;
     }
 });
+
 
 const bzProcessMessages = [
     /\[Bazaar] Executing instant sell\.\.\./, 
@@ -44,6 +50,7 @@ const bzProcessMessages = [
     /\[Bazaar] Cancelling order\.\.\./,
     /\[Bazaar] Submitting sell offer\.\.\./,
     /\[Bazaar] You don't have enough products!/,
+    /\[Bazaar] The Buy Orders for this item changed too much!/,
 ]
 
 bzProcessMessages.forEach(msg => {
@@ -59,7 +66,7 @@ const ultimateBooks = ['Chimera', 'Habenero Tactics', 'The One', 'Fatal Tempo', 
 register('chat', (amt, item, cost, event) => {
     if (!getInSkyblock()) return;
     const message = ChatLib.getChatMessage(event, true);
-    let instabuyMessage = ultimateBooks.includes(stripRomanNumerals(item).trim()) 
+    const instabuyMessage = ultimateBooks.includes(stripRomanNumerals(item).trim()) 
         ? getBazaarResponse(BZ_PREFIX, message, 'instabuyUlt')
         : getBazaarResponse(BZ_PREFIX, message, 'instabuyGeneral');
     replaceBazaarMessage(event, instabuyMessage);
@@ -69,7 +76,7 @@ register('chat', (amt, item, cost, event) => {
 register('chat', (amt, item, cost, event) => {
     if (!getInSkyblock()) return;
     const message = ChatLib.getChatMessage(event, true);
-    let instasellMessage = ultimateBooks.includes(stripRomanNumerals(item).trim()) 
+    const instasellMessage = ultimateBooks.includes(stripRomanNumerals(item).trim()) 
         ? getBazaarResponse(BZ_PREFIX, message, 'instasellUlt') 
         : getBazaarResponse(BZ_PREFIX, message, 'instasellGeneral');
     replaceBazaarMessage(event, instasellMessage); 
@@ -79,7 +86,7 @@ register('chat', (amt, item, cost, event) => {
 register('chat', (amt, item, coinsAmt, event) => {
     if (!getInSkyblock()) return;
     const message = ChatLib.getChatMessage(event, true);
-    let buyorderSetupMessage = getBazaarResponse(BZ_PREFIX, message, 'buyOrderSetup');
+    const buyorderSetupMessage = getBazaarResponse(BZ_PREFIX, message, 'buyOrderSetup');
     replaceBazaarMessage(event, buyorderSetupMessage);
 }).setCriteria('[Bazaar] Buy Order Setup! ${amt}x ${item} for ${coinsAmt} coins.');
 
@@ -87,7 +94,7 @@ register('chat', (amt, item, coinsAmt, event) => {
 register('chat', (amt, item, event) => {
     if (!getInSkyblock()) return;
     const message = ChatLib.getChatMessage(event, true);
-    let buyorderFilledMessage = getBazaarResponse(BZ_PREFIX, message, 'buyOrderFilled');
+    const buyorderFilledMessage = getBazaarResponse(BZ_PREFIX, message, 'buyOrderFilled');
     replaceBazaarMessage(event, buyorderFilledMessage);
     if (bzData.sounds) bzAudio.playDingSound();
 }).setCriteria('[Bazaar] Your Buy Order for ${amt}x ${item} was filled!');
@@ -96,7 +103,7 @@ register('chat', (amt, item, event) => {
 register('chat', (amt, item, cost, costEach, event) => {
     if (!getInSkyblock()) return;
     const message = ChatLib.getChatMessage(event, true);
-    let buyorderClaimedMessage = getBazaarResponse(BZ_PREFIX, message, 'buyOrderClaimed');      
+    const buyorderClaimedMessage = getBazaarResponse(BZ_PREFIX, message, 'buyOrderClaimed');      
     replaceBazaarMessage(event, buyorderClaimedMessage);
 }).setCriteria('[Bazaar] Claimed ${amt}x ${item} worth ${cost} coins bought for ${costEach} each!');
 
@@ -111,7 +118,7 @@ register('chat', (cost, event) => {
 register('chat', (amt, item, cost, event) =>  {
     if (!getInSkyblock()) return;
     const message = ChatLib.getChatMessage(event, true);
-    let sellofferSetupMessage = getBazaarResponse(BZ_PREFIX, message, 'sellOfferSetup');
+    const sellofferSetupMessage = getBazaarResponse(BZ_PREFIX, message, 'sellOfferSetup');
     replaceBazaarMessage(event, sellofferSetupMessage);
 }).setCriteria('[Bazaar] Sell Offer Setup! ${amt}x ${item} for ${cost} coins.');
 
@@ -119,7 +126,7 @@ register('chat', (amt, item, cost, event) =>  {
 register('chat', (amt, item, event) => {
     if (!getInSkyblock()) return;
     const message = ChatLib.getChatMessage(event, true);    
-    let sellofferFilledMessage = getBazaarResponse(BZ_PREFIX, message, 'sellOfferFilled')
+    const sellofferFilledMessage = getBazaarResponse(BZ_PREFIX, message, 'sellOfferFilled')
     replaceBazaarMessage(event, sellofferFilledMessage);
     if (bzData.sounds) bzAudio.playDingSound();
 }).setCriteria('[Bazaar] Your Sell Offer for ${amt}x ${item} was filled!');   
@@ -128,7 +135,7 @@ register('chat', (amt, item, event) => {
 register('chat', (cost, amt, item, costEach, event) => {
     if (!getInSkyblock()) return;
     const message = ChatLib.getChatMessage(event, true);   
-    let sellorderClaimedMessage = getBazaarResponse(BZ_PREFIX, message, 'sellOfferClaimed');        
+    const sellorderClaimedMessage = getBazaarResponse(BZ_PREFIX, message, 'sellOfferClaimed');        
     replaceBazaarMessage(event, sellorderClaimedMessage);
 }).setCriteria('[Bazaar] Claimed ${cost} coins from selling ${amt}x ${item} at ${costEach} each!');
 
@@ -136,7 +143,7 @@ register('chat', (cost, amt, item, costEach, event) => {
 register('chat', (amt, item, event) => {
     if (!getInSkyblock()) return;
     const message = ChatLib.getChatMessage(event, true);
-    let sellofferCancelledMessage = getBazaarResponse(BZ_PREFIX, message, 'sellOfferCancelled');
+    const sellofferCancelledMessage = getBazaarResponse(BZ_PREFIX, message, 'sellOfferCancelled');
     replaceBazaarMessage(event, sellofferCancelledMessage);
 }).setCriteria('[Bazaar] Cancelled! Refunded ${amt}x ${item} from cancelling Sell Offer!');
 
@@ -145,3 +152,68 @@ register('chat', (event) => {
     if (!getInSkyblock()) return;
     replaceBazaarMessage(event, `${BZ_PREFIX}&cServer is too laggy to use the Bazaar.`);
 }).setCriteria('[Bazaar] This server is too laggy to use the Bazaar, sorry!');
+
+//! volatile market
+register('chat', (event) => {
+    if (!getInSkyblock()) return;
+    replaceBazaarMessage(event, `${BZ_PREFIX}&cThis item has a volatile market!`)
+}).setCriteria('[Bazaar] Seems like a volatile market!');
+
+//! escrow refund
+//TODO: check
+register('chat', (amt, item, event) => {
+    if (!getInSkyblock()) return;
+    const message = ChatLib.getChatMessage(event, true);
+    if (message.includes('Auction')) return;    
+    const getRefundedMessage = getBazaarResponse(BZ_PREFIX, message, 'escrowRefund');
+    replaceBazaarMessage(event, getRefundedMessage);
+}).setCriteria('Escrow refunded ${amt} ${item}!');
+
+//! bazaar flipped
+register('chat', (amt, item, profit, event) => {
+    if (!getInSkyblock()) return;
+    const message = ChatLib.getChatMessage(event, true);
+    const bzFlipMessage = getBazaarResponse(BZ_PREFIX, message, 'bzFlip');
+    replaceBazaarMessage(event, bzFlipMessage);
+}).setCriteria('[Bazaar] Order Flipped! ${amt}x ${item} for ${profit} coins of total expected profit.');
+
+//! no buyers
+register('chat', (item, event) => {
+    if (!getInSkyblock()) return;
+    replaceBazaarMessage(event, `${BZ_PREFIX}&cNo buyers for &e${item}!`);        
+}).setCriteria("[Bazaar] Couldn't find any buyers for ${item}!");
+
+//! have goods!
+register('chat', (event) => {
+    if (!getInSkyblock()) return;
+    replaceBazaarMessage(event, `${BZ_PREFIX}&cYou have goods to claim on this order!`);        
+}).setCriteria('[Bazaar] You have goods to claim on this order!');
+
+//! price is lower than expected
+register('chat', (inputPrice, oldPrice, event) => {
+    if (!getInSkyblock()) return;
+    replaceBazaarMessage(event, `${BZ_PREFIX}&cERROR: &6${truncateNumbers(inputPrice)}/unit &7is too &clow&7! &7(Ask: &6${truncateNumbers(oldPrice)}/unit&7)`);  
+}).setCriteria('[Bazaar] This price of ${inputPrice}/unit is lower than the old price of ${oldPrice}/unit!');       
+
+const bzErrorTypes = {
+    "Your price is way over the best order/offer's price.": "Price exceeds the best order/offer.",
+    "This price doesn't work.": "Price doesn't work",
+    "You don't have the space required to claim that!": "Inventory has no space to claim!",
+    "You cannot afford this!": "Insufficient Funds!",
+    "Couldn't parse that price!": "Unrecognized price format!",
+    "You are overbidding too much!": "Too much overbid!",
+}
+
+register('chat', (response, event) => {
+    if (!getInSkyblock()) return;
+    if (bzErrorTypes.hasOwnProperty(response)) {
+        replaceBazaarMessage(event, `${BZ_PREFIX}&c${bzErrorTypes[response]}`);     
+    }
+}).setCriteria('[Bazaar] ${response}'); 
+
+//! allowed unit price
+register('chat', (cost, event) => {
+    if (!getInSkyblock()) return;
+    replaceBazaarMessage(event, `${BZ_PREFIX}Max allowed: &r${truncateNumbers(cost, true)}`);                 
+}).setCriteria('[Bazaar] Allowed unit price: ${cost} coins');
+

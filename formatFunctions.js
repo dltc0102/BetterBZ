@@ -21,6 +21,10 @@ export function getBazaarResponse(prefix, message, type) {
         //     regex: /./,
         //     format: formatFunc,
         // },
+        escrowRefund: {
+            regex: /&eEscrow refunded (.+) (.+)!/,
+            format: formatEscrowRefund
+        },
         instabuyUlt: {
             regex: /&r&6\[Bazaar\] &r&7Bought &r&a(.+?)&r&7x &r(&[a-z\d+])&l(.+?) &r&7for &r&6(.+?) coins&r&7!&r/,
             format: formatInstabuyUlt
@@ -65,6 +69,10 @@ export function getBazaarResponse(prefix, message, type) {
             regex: /&r&6\[Bazaar\] &r&7&r&cCancelled! &r&7Refunded &r&a(.+?)&r&7x &r(&[a-z\d+])(.+) &r&7from cancelling Sell Offer!&r/,
             format: formatSellOfferCancelled
         },
+        bzFlip: {
+            regex: /&r&6\[Bazaar\] &r&7&r&eOrder Flipped! &r&a(.+)&r&7x (.+) &r&7for &r&6(.+) coins &r&7of total expected profit\.&r/,
+            format: formatBazaarFlip
+        },
     };
 
     const { regex, format } = patterns[type];
@@ -72,71 +80,86 @@ export function getBazaarResponse(prefix, message, type) {
 }   
 
 function formatInstabuyUlt(prefix, match) {
-    let [_, itemAmount, itemColor, itemName, itemCost] = match;
+    const [_, itemAmount, itemColor, itemName, itemCost] = match;
     return `${prefix}Insta-bought: &a${itemAmount}&7x ${itemColor}&l${abbreviateWords(itemName)} &7for &6${truncateNumbers(itemCost)}&7!`;
 }
 
 function formatInstabuyGeneral(prefix, match) {     
-    let [_, itemAmount, itemColor, itemName, itemCost] = match;
+    const [_, itemAmount, itemColor, itemName, itemCost] = match;
     return `${prefix}Insta-bought: &a${itemAmount}&7x ${itemColor}${abbreviateWords(itemName)} &7for &6${truncateNumbers(itemCost)}&7!`;    
 }
 
 function formatInstasellUlt(prefix, match) {
-    let [_, itemAmount, itemColor, itemName, itemCost] = match;
+    const [_, itemAmount, itemColor, itemName, itemCost] = match;
     return `${prefix}Insta-sold: &a${itemAmount}&7x ${itemColor}&l${abbreviateWords(itemName)} &7for &6${truncateNumbers(itemCost)}&7!`;
 }
 
 function formatInstasellGeneral(prefix, match) {
-    let [_, itemAmount, itemColor, itemName, itemCost] = match;
+    const [_, itemAmount, itemColor, itemName, itemCost] = match;
     return `${prefix}Insta-sold: &a${itemAmount}&7x ${itemColor}${abbreviateWords(itemName)} &7for &6${truncateNumbers(itemCost)}&7!`;
 }
 
 function getCostPerItem(amt, cost) {
-    let floatAmt = parseFloat(amt.replace(/,/g, ''));
-    let floatCost = parseFloat(cost.replace(/,/g, ''))
+    const floatAmt = parseFloat(amt.replace(/,/g, ''));
+    const floatCost = parseFloat(cost.replace(/,/g, ''))
     return truncateNumbers((floatCost / floatAmt).toFixed(2));
 }
 
 function formatBuyOrderSetup(prefix, match) {
-    let [_, itemAmount, itemColor, itemName, itemCost] = match; 
-    let costPer = getCostPerItem(itemAmount, itemCost);   
+    const [_, itemAmount, itemColor, itemName, itemCost] = match; 
+    const costPer = getCostPerItem(itemAmount, itemCost);   
     return itemAmount === '1' 
         ? `${prefix}Buy Order Set: &a${itemAmount}&7x ${itemColor}${abbreviateWords(itemName)} &7for &6${truncateNumbers(itemCost)}&7!`
         : `${prefix}Buy Order Set: &a${itemAmount}&7x ${itemColor}${abbreviateWords(itemName)} &7for &6${truncateNumbers(itemCost)} &7(${costPer} per)!`;               
 }
 
 function formatBuyOrderFilled(prefix, match) {
-    let [_, itemAmt, itemColor, itemName] = match;
+    const [_, itemAmt, itemColor, itemName] = match;
     return `${prefix}Buy Order Filled: &a${itemAmt}&7x ${itemColor}${abbreviateWords(itemName)}&7!`;
 }       
 
 function formatBuyOrderClaimed(prefix, match) {
-    let [_, itemAmount, itemColor, itemName, itemCost, eachCost] = match;
-    let [__, bold=null, name] = itemName.match(/(&[a-qs-z0-9])?(.+)/);
-    let finalItemName = bold ? `${bold}${abbreviateWords(name)}` : abbreviateWords(name);       
+    const [_, itemAmount, itemColor, itemName, itemCost, eachCost] = match;
+    const [__, bold=null, name] = itemName.match(/(&[a-qs-z0-9])?(.+)/);
+    const finalItemName = bold ? `${bold}${abbreviateWords(name)}` : abbreviateWords(name);       
     return itemAmount === '1' 
         ? `${prefix}Buy Order Claimed: &a${itemAmount}&7x ${itemColor}${finalItemName} &7for &6${truncateNumbers(itemCost)}&7!`
         : `${prefix}Buy Order Claimed: &a${itemAmount}&7x ${itemColor}${finalItemName} &7for &6${truncateNumbers(itemCost)} &7(${truncateNumbers(eachCost)} per)!`;
 }
 
 function formatSellOfferSetup(prefix, match) {
-    let [_, itemAmount, itemColor, itemName, itemCost] = match;
+    const [_, itemAmount, itemColor, itemName, itemCost] = match;
     return `${prefix}Sell Offer Set: &a${itemAmount}&7x ${itemColor}${abbreviateWords(itemName)} &7for &6${truncateNumbers(itemCost)}&7!`;
 }
 
 function formatSellOfferFilled(prefix, match) {
-    let [_, itemAmount, itemColor, itemName] = match;
+    const [_, itemAmount, itemColor, itemName] = match;
     return `${prefix}Sell Offer Filled: &a${itemAmount}&7x ${itemColor}${abbreviateWords(itemName)}&7!`;
 }
 
 function formatSellOfferClaimed(prefix, match) {
-    let [_, itemCost, itemAmount, itemColor, itemName, eachCost] = match;
+    const [_, itemCost, itemAmount, itemColor, itemName, eachCost] = match;
     return itemAmount === '1' 
         ? `${prefix}Sell Offer Claimed: &a${itemAmount}&7x ${itemColor}${abbreviateWords(itemName)} &7for &6${truncateNumbers(itemCost)}&7!`
         : `${prefix}Sell Offer Claimed: &a${itemAmount}&7x ${itemColor}${abbreviateWords(itemName)} &7for &6${truncateNumbers(itemCost)} &7(${truncateNumbers(eachCost)} per)!`;
 }   
 
 function formatSellOfferCancelled(prefix, match) {
-    let [_, itemAmount, itemColor, itemName] = match;
-    return `${prefix}&r&6Sell Offer Cancelled: &a${itemAmount}&7x ${itemColor}${itemName}`;     
+    const [_, itemAmount, itemColor, itemName] = match;
+    return `${prefix}&r&6Sell Offer Cancelled: &a${itemAmount}&7x ${itemColor}${itemName}`;                    
+}
+        
+function formatEscrowRefund(prefix, match) {
+    const [_, amount, formattedItem] = match;   
+    return `${prefix}REFUND: &a${amount}&7x ${formattedItem}!`;
+}
+
+
+function formatBazaarFlip(prefix, match) {
+    const [_, amt, item, coins] = match;
+    const outcome = coins.includes('-') ? 'loss' : 'profit';
+    const outcomeColor = outcome === 'loss' ? '&c' : '&a';
+    const f_coins = truncateNumbers(coins);     
+    const profit = outcome === 'loss' ? `-${f_coins}` : f_coins;
+    return `${prefix}Flipped ${outcomeColor}${outcome}&6: &r&6${profit} &7from &a${amt}&7x ${abbreviateWords(item)}&7!`;    
 }

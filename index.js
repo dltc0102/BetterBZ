@@ -62,7 +62,7 @@ bzProcessMessages.forEach(msg => {
 
 const ultimateBooks = ['Chimera', 'Habenero Tactics', 'The One', 'Fatal Tempo', "Bobbin' Time", 'Inferno', 'Flash', 'Duplex', 'Rend', 'Refrigerate', 'Legion', 'One For All', 'Soul Eater', 'Swarm', 'Last Stand', 'Wisdom', 'Ultimate Wise', 'Ultimate Jerry', 'Combo', 'Bank', 'No Pain No Gain'];
 
-//! bz bought instant                       
+//! bz bought instant     
 register('chat', (amt, item, cost, event) => {
     if (!getInSkyblock()) return;
     const message = ChatLib.getChatMessage(event, true);
@@ -192,16 +192,16 @@ register('chat', (event) => {
 //! price is lower than expected
 register('chat', (inputPrice, oldPrice, event) => {
     if (!getInSkyblock()) return;
-    replaceBazaarMessage(event, `${BZ_PREFIX}&cERROR: &6${truncateNumbers(inputPrice)}/unit &7is too &clow&7! &7(Ask: &6${truncateNumbers(oldPrice)}/unit&7)`);  
+    replaceBazaarMessage(event, `${BZ_PREFIX}&cERROR: &6${truncateNumbers(inputPrice)}/unit &7is too &clow&7! &7(Ask: &6${truncateNumbers(oldPrice)}/unit&7)!`);  
 }).setCriteria('[Bazaar] This price of ${inputPrice}/unit is lower than the old price of ${oldPrice}/unit!');       
 
 const bzErrorTypes = {
-    "Your price is way over the best order/offer's price.": "Price exceeds the best order/offer.",
-    "This price doesn't work.": "Price doesn't work",
+    "Your price is way over the best order/offer's price.": "Price exceeds the best order/offer!",
+    "This price doesn't work.": "Price doesn't work!",
     "You don't have the space required to claim that!": "Inventory has no space to claim!",
-    "You cannot afford this!": "Insufficient Funds!",
+    "You cannot afford this!": "Insufficient funds!",
     "Couldn't parse that price!": "Unrecognized price format!",
-    "You are overbidding too much!": "Too much overbid!",
+    "You are overbidding too much!": "Too much overbid!",   
 }
 
 register('chat', (response, event) => {
@@ -214,6 +214,6 @@ register('chat', (response, event) => {
 //! allowed unit price
 register('chat', (cost, event) => {
     if (!getInSkyblock()) return;
-    replaceBazaarMessage(event, `${BZ_PREFIX}Max allowed: &r${truncateNumbers(cost, true)}`);                 
+    replaceBazaarMessage(event, `${BZ_PREFIX}&cAllowed unit price: &6${truncateNumbers(cost, true)}`);
 }).setCriteria('[Bazaar] Allowed unit price: ${cost} coins');
 

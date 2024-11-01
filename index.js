@@ -30,11 +30,11 @@ register('command', () => {
 register('gameLoad', () => {
     const soundStatus = bzData.sounds ? '&aON' : '&cOFF';
     const bzLoadMessage = `&6[BetterBZ] &7Loaded! &3[&rSounds: ${soundStatus}&3]`;
-    const suppportMessage = new Message (
+    const supportMessage = new Message (
         `${bzLoadMessage} &r&8-- `, supportClickable
     );
     
-    ChatLib.chat(suppportMessage);
+    ChatLib.chat(supportMessage);
     if (bzData.firstInstall) { 
         bzData.firstInstall = false;
     }
@@ -110,7 +110,7 @@ register('chat', (amt, item, cost, costEach, event) => {
 //! bz cancelled buy order              
 register('chat', (cost, event) => {
     if (!getInSkyblock()) return;
-    replaceBazaarMessage(event, `${BZ_PREFIX}&r&6Buy Order Cancelled: &7Refunded &r&6${cost} coins&7!`);
+    replaceBazaarMessage(event, `${BZ_PREFIX}&r&6Buy Order Cancelled: &7Refunded &r&6${truncateNumbers(cost)} coins&7!`);           
 }).setCriteria('[Bazaar] Cancelled! Refunded ${cost} coins from cancelling Buy Order!');
 
 
@@ -199,6 +199,7 @@ const bzErrorTypes = {
     "Your price is way over the best order/offer's price.": "Price exceeds the best order/offer!",
     "This price doesn't work.": "Price doesn't work!",
     "You don't have the space required to claim that!": "Inventory has no space to claim!",
+    "You don't have enough inventory space to fit all of those items!": "Inventory has no space to claim!", 
     "You cannot afford this!": "Insufficient funds!",
     "Couldn't parse that price!": "Unrecognized price format!",
     "You are overbidding too much!": "Too much overbid!",   

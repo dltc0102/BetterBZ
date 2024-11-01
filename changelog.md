@@ -9,3 +9,4 @@
 
 # v1.2
 + added new messages to format
++ fixed some exclamation marks and spelling

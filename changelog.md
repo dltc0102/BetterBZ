@@ -10,3 +10,15 @@
 # v1.2
 + added new messages to format
 + fixed some exclamation marks and spelling
+
+# v1.3
++ added formatting to warning: inv full
++ changed refund message for coins to have truncation
+
+# v1.4
++ added formatting to warning: no items to sell
+        
+# v1.5
++ added more unformatted warnings
++ added command reminder for bz sounds
++ replaced report clickable with sound switch clickable
